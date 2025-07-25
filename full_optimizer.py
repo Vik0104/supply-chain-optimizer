@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from typing import Dict, List, Tuple, Optional, Any
 from datetime import datetime
-import json
+import copy
 
 class MultiDestinationSupplyChainOptimizer:
     """
@@ -741,8 +741,8 @@ class MultiDestinationSupplyChainOptimizer:
             'results': []
         }
         
-        # Save original config
-        original_config = json.loads(json.dumps(self.config))
+        # Save original config using deep copy (avoids JSON serialization issues with tuple keys)
+        original_config = copy.deepcopy(self.config)
         
         for variation in variations:
             # Apply variation
@@ -770,7 +770,7 @@ class MultiDestinationSupplyChainOptimizer:
                 results['results'].append(result)
             
             # Restore original config
-            self.config = json.loads(json.dumps(original_config))
+            self.config = copy.deepcopy(original_config)
         
         return results
     

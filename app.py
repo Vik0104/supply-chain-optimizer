@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
 import json
+import copy
 from datetime import datetime
 import numpy as np
 from full_optimizer import MultiDestinationSupplyChainOptimizer
@@ -683,7 +684,7 @@ with main_tab4:
             if scenario != "Current Configuration":
                 with st.spinner(f"Running {scenario} scenario..."):
                     # Copy current config
-                    scenario_config = json.loads(json.dumps(st.session_state.config))
+                    scenario_config = copy.deepcopy(st.session_state.config)
                     
                     # Modify based on scenario
                     if scenario == "100% China Sourcing":
