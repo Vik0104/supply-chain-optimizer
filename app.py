@@ -631,39 +631,55 @@ with main_tab4:
                         st.session_state.solution
                     )
                     
-                    # Display results
-                    st.subheader(f"Sensitivity to {parameter.title()} Changes")
-                    
-                    # Create line chart
-                    sens_data = pd.DataFrame(results['results'])
-                    
-                    fig = go.Figure()
-                    fig.add_trace(go.Scatter(
-                        x=sens_data['variation'],
-                        y=sens_data['total_cost'],
-                        mode='lines+markers',
-                        name='Total Cost',
-                        line=dict(color='#3498DB', width=3),
-                        marker=dict(size=10)
-                    ))
-                    
-                    fig.update_layout(
-                        title=f'Total Cost Sensitivity to {parameter.title()}',
-                        xaxis_title='Variation (%)',
-                        yaxis_title='Total Cost ($)',
-                        hovermode='x unified'
-                    )
-                    
-                    st.plotly_chart(fig, use_container_width=True)
-                    
-                    # Display table
-                    st.subheader("Detailed Results")
-                    display_df = sens_data.copy()
-                    display_df['total_cost'] = display_df['total_cost'].apply(lambda x: f"${x:,.0f}")
-                    display_df['cost_change'] = display_df['cost_change'].apply(lambda x: f"{x:+.1f}%")
-                    display_df['variation'] = display_df['variation'].apply(lambda x: f"{x:+d}%")
-                    
-                    st.dataframe(display_df, use_container_width=True, hide_index=True)
+                    # Check if results exist and are valid
+                    if results and 'results' in results and len(results['results']) > 0:
+                        # Display results
+                        st.subheader(f"Sensitivity to {parameter.title()} Changes")
+                        
+                        # Create line chart
+                        sens_data = pd.DataFrame(results['results'])
+                        
+                        # Verify required columns exist
+                        if 'variation' in sens_data.columns and 'total_cost' in sens_data.columns:
+                            fig = go.Figure()
+                            fig.add_trace(go.Scatter(
+                                x=sens_data['variation'],
+                                y=sens_data['total_cost'],
+                                mode='lines+markers',
+                                name='Total Cost',
+                                line=dict(color='#3498DB', width=3),
+                                marker=dict(size=10)
+                            ))
+                            
+                            fig.update_layout(
+                                title=f'Total Cost Sensitivity to {parameter.title()}',
+                                xaxis_title='Variation (%)',
+                                yaxis_title='Total Cost ($)',
+                                hovermode='x unified'
+                            )
+                            
+                            st.plotly_chart(fig, use_container_width=True)
+                            
+                            # Display table
+                            st.subheader("Detailed Results")
+                            display_df = sens_data.copy()
+                            display_df['total_cost'] = display_df['total_cost'].apply(lambda x: f"${x:,.0f}")
+                            if 'cost_change' in display_df.columns:
+                                display_df['cost_change'] = display_df['cost_change'].apply(lambda x: f"{x:+.1f}%")
+                            display_df['variation'] = display_df['variation'].apply(lambda x: f"{x:+d}%")
+                            
+                            st.dataframe(display_df, use_container_width=True, hide_index=True)
+                        else:
+                            st.error("Sensitivity analysis results are missing required data columns.")
+                            st.write("Available columns:", list(sens_data.columns) if not sens_data.empty else "No data")
+                    else:
+                        st.error("Sensitivity analysis failed to generate results. This may be due to:")
+                        st.write("• Infeasible solutions for the given parameter variations")
+                        st.write("• Time limit exceeded during optimization")
+                        st.write("• Invalid parameter ranges")
+                        
+                        if results:
+                            st.write("Debug info:", results)
         
         # What-if scenarios
         st.subheader("🎯 What-If Scenarios")
